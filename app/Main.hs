@@ -9,8 +9,11 @@ import Lemon.Parser
 main :: IO ()
 main =
     do
+        -- Get file name from arg list
         args <- getArgs
         let filename = head args
+
+        -- Read and parse file
         contents <- readFile filename
         case readExpr contents of
             Ok v -> print v

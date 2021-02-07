@@ -8,27 +8,35 @@ import Text.ParserCombinators.Parsec
 
 import Lemon.Data
 
+-- Represents the result of parsing
 data ParseResult = Ok LemonValue
                  | Err String
 
+-- Parses an integer
 parseInt :: Parser LemonValue
 parseInt =
     do
+        -- An integer is many digits
         x <- many1 digit
         return $ Int . read $ x
 
+-- Parses a float
 parseDecimal :: Parser LemonValue
 parseDecimal =
     do
+        -- A float is many digits, followed by a dot, followed by more digits
         whole <- many1 digit
         char '.'
         part <- many digit
         return $ Decimal . read $ whole ++ "." ++ part
 
+-- Parses an escaped character (useful for both parseChar and parseString)
 parseRawChar :: Parser Char
 parseRawChar =
+    -- A character is not a backslash or quote
     noneOf "\\\"\'"
         <|> do
+            -- Or an escaped character
             char '\\'
             v <- oneOf "nrta\"\'"
             return $ case v of
@@ -38,20 +46,24 @@ parseRawChar =
                 'a' -> '\a'
                 _   -> v
 
+-- Parses a character
 parseChar :: Parser LemonValue
 parseChar =
     do
+        -- A character is a single quote, followed by a character value, followed by a single quote
         char '\''
         c <- parseRawChar
         char '\''
         return $ Character c
 
+-- Parses an expression
 parseExpr :: Parser LemonValue
 parseExpr =  try parseDecimal
          <|> parseInt
          <|> parseChar
          <?> "expected number or character"
 
+-- Reads an expression and parses it
 readExpr :: String -> ParseResult
 readExpr s =
     case parse parseExpr "lemon" s of
@@ -64,4 +76,4 @@ readExpr s =
  - - s expressions
  - - quoted expressions
  - - atoms
- - -}
+-}
