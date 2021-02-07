@@ -17,11 +17,11 @@ List of primatives includes:
 ## Bind and Func
 The `bind` functions and the `func` functions do not require parentheses for their last argument. The following is valid:
 ```
-(bind true func 'a func 'b a)
-(bind false func 'a func 'b b)
-(bind cons func 'a func 'b func 'f f a b)
-(bind car func 'list list true)
-(bind cdr func 'list list false)
+(bind 'true func 'a func 'b a)
+(bind 'false func 'a func 'b b)
+(bind 'cons func 'a func 'b func 'f f a b)
+(bind 'car func 'list list true)
+(bind 'cdr func 'list list false)
 ```
 
 ## Bindr and Bindl
