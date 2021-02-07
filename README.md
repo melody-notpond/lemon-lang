@@ -7,7 +7,7 @@ List of primatives includes:
 - Characters (`'a'`)
 - Numeric operations (`+`, `-`, `*`, `/`, `mod`, `div`, `&`, `|`, `^`, `<<`, `>>`)
 - `bind`, `bindl`, `bindr`, `func`
-- `cond`
+- `cond`, `eval`
 - `=`, `<`, `>`, `int?`, `float?`, `func?`, `char?`
 - `int`, `float`, `char` conversion functions
 - `import`, `export`
