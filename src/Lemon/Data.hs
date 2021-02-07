@@ -12,6 +12,7 @@ data LemonValue = Int Integer
 instance Show LemonValue where
     show (Int i) = show i
     show (Decimal f) = show f
+    show (Character c) = show c
     show (Atom a) = a
     show (Quote q) = '\'' : show q
     show (SExpr xs) = "(" ++ unwords (map show xs) ++ ")"
