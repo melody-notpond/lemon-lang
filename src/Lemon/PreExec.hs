@@ -21,14 +21,14 @@ changeBindings :: [(String, BindMode)] -> LemonValue -> ([(String, BindMode)], L
 -- Set bind mode
 changeBindings dict (SExpr (Atom "bindl" : Quote (Atom b) : v)) =
     let dict' = (b, BindLeft) : dict in
-        (dict', SExpr $ Atom "bindl" : Quote (Atom b) : [SExpr $ mapBinding dict' v])
+        (dict', SExpr $ Atom "bindl" : Quote (Atom b) : [snd $ changeBindings dict' $ SExpr v])
 changeBindings dict (SExpr (Atom "bindr" : Quote (Atom b) : v)) =
     let dict' = (b, BindRight) : dict in
-        (dict', SExpr $ Atom "bindr" : Quote (Atom b) : [SExpr $ mapBinding dict' v])
+        (dict', SExpr $ Atom "bindr" : Quote (Atom b) : [snd $ changeBindings dict' $ SExpr v])
 
 -- Regular bindings
 changeBindings dict (SExpr (Atom "bind" : Quote (Atom b) : v)) =
-    (dict, SExpr $ Atom "bind" : Quote (Atom b) : [SExpr $ mapBinding dict v])
+    (dict, SExpr $ Atom "bind" : Quote (Atom b) : [snd $ changeBindings dict $ SExpr v])
 
 -- Change functions
 changeBindings dict (SExpr (Atom "func" : Quote (Atom a) : v)) =
