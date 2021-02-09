@@ -65,7 +65,7 @@ parseString =
         str <- many parseRawChar
         char '\"'
         -- "abc" returns `SExpr [Atom "list", Character 'a', Character 'b', Character 'c']`
-        return $ SExpr $ Atom "list" : map Character str
+        return $ SExpr $ Atom "list" : (map Character str ++ [Int 0])
 
 -- Parses a list
 parseList :: Parser LemonValue
