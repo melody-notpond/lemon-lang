@@ -56,11 +56,53 @@ parseChar =
         char '\''
         return $ Character c
 
+-- Parses a string
+parseString :: Parser LemonValue
+parseString =
+    do
+        -- A string is a double quote, followed by a bunch of characters, followed by a double quote
+        char '\"'
+        str <- many parseRawChar
+        char '\"'
+        -- "abc" returns `SExpr [Atom "list", Character 'a', Character 'b', Character 'c']`
+        return $ SExpr $ Atom "list" : map Character str
+
+-- Parses a list
+parseList :: Parser LemonValue
+parseList =
+    do
+        -- Parentheses surrounding space-separated expressions
+        char '('
+        list <- sepBy parseExpr $ skipMany1 space
+        char ')'
+        return $ SExpr list
+
+-- Parses a quote
+parseQuote :: Parser LemonValue
+parseQuote =
+    do
+        -- A quote is some expression prefixed with a single quote
+        char '\''
+        Quote <$> parseExpr
+
+-- Parses an atom
+parseAtom :: Parser LemonValue
+parseAtom =
+    do
+        -- An atom is a set of any non-whitespace-or-quote-or-parens chracters
+        atom <- many1 $ noneOf " \"\'()"
+        -- TODO: more strict atom matching?
+        return $ Atom atom
+
 -- Parses an expression
 parseExpr :: Parser LemonValue
 parseExpr =  try parseDecimal
          <|> parseInt
-         <|> parseChar
+         <|> try parseChar -- if fails, match against parseQuote
+         <|> parseString
+         <|> parseQuote
+         <|> parseList
+         <|> parseAtom
          <?> "expected number or character"
 
 -- Reads an expression and parses it
