@@ -4,6 +4,7 @@ import System.Environment
 import System.IO
 
 import Lemon.Data
+import Lemon.PreExec
 import Lemon.Parser
 
 main :: IO ()
@@ -16,6 +17,6 @@ main =
         -- Read and parse file
         contents <- readFile filename
         case readExpr contents of
-            Ok v -> print v
+            Ok v -> print $ changeExprBindings v
             Err e -> putStrLn e
 
