@@ -92,7 +92,7 @@ parseAtom :: Parser LemonValue
 parseAtom =
     do
         -- An atom is a string of any of these characters
-        atom <- many1 $ oneOf "!@$%^&*_-+=.,<~>/?qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCM1234567890"
+        atom <- many1 $ oneOf "!@$%^&*_-+=.,<~>/?:qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890"
         return $ Atom atom
 
 -- Parses an expression
