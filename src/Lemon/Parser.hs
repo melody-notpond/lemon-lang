@@ -9,7 +9,7 @@ import Text.ParserCombinators.Parsec
 import Lemon.Data
 
 -- Represents the result of parsing
-data ParseResult = Ok [LemonValue]
+data ParseResult = Ok LemonValue
                  | Err String
 
 -- Parses an integer
@@ -119,6 +119,6 @@ readExpr s =
             eof
             return v
     ) "lemon" s of
-        Right v -> Ok v
+        Right v -> Ok $ SExpr v
         Left e -> Err $ show e
 
