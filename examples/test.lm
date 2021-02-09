@@ -1,1 +1,8 @@
-(1 2 '\n' '(+ 5 8) (len "abc"))
+(bind 'cons func 'x func 'y func 'f f x y)
+(bindr 'list cons)
+
+   (    
+     1    2    '\n' 'a    '(  + 5 8 )   (   len    "abc"   ) 
+)     
+
+

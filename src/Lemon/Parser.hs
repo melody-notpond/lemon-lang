@@ -9,7 +9,7 @@ import Text.ParserCombinators.Parsec
 import Lemon.Data
 
 -- Represents the result of parsing
-data ParseResult = Ok LemonValue
+data ParseResult = Ok [LemonValue]
                  | Err String
 
 -- Parses an integer
@@ -73,7 +73,9 @@ parseList =
     do
         -- Parentheses surrounding space-separated expressions
         char '('
-        list <- sepBy parseExpr $ skipMany1 space
+        spaces
+        list <- many $ try parseExpr
+        spaces
         char ')'
         return $ SExpr list
 
@@ -89,33 +91,34 @@ parseQuote =
 parseAtom :: Parser LemonValue
 parseAtom =
     do
-        -- An atom is a set of any non-whitespace-or-quote-or-parens chracters
-        atom <- many1 $ noneOf " \"\'()"
-        -- TODO: more strict atom matching?
+        -- An atom is a string of any of these characters
+        atom <- many1 $ oneOf "!@$%^&*_-+=.,<~>/?qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCM1234567890"
         return $ Atom atom
 
 -- Parses an expression
 parseExpr :: Parser LemonValue
-parseExpr =  try parseDecimal
+parseExpr =  spaces >> (
+             try parseDecimal
          <|> parseInt
          <|> try parseChar -- if fails, match against parseQuote
-         <|> parseString
          <|> parseQuote
+         <|> parseString
          <|> parseList
          <|> parseAtom
-         <?> "expected number or character"
+         <?> "expected number, character, string, atom, quoted expression, or s expression"
+         )
 
 -- Reads an expression and parses it
 readExpr :: String -> ParseResult
 readExpr s =
-    case parse parseExpr "lemon" s of
+    case parse (
+        do
+            spaces
+            v <- many $ try parseExpr
+            spaces
+            eof
+            return v
+    ) "lemon" s of
         Right v -> Ok v
         Left e -> Err $ show e
 
-{-
- - TODO
- - - strings ("abc" is syntax sugar for (list 'a' 'b' 'c'); parse directly to that)
- - - s expressions
- - - quoted expressions
- - - atoms
--}
