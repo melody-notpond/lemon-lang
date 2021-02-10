@@ -70,9 +70,9 @@ changeBindings dict (Quote s) = (dict, Quote $ snd $ changeBindings dict s)
 changeBindings dict v = (dict, v)
 
 -- Check with default arguments
-changeExprBindings :: LemonValue -> LemonValue
+changeExprBindings :: [LemonValue] -> [LemonValue]
 changeExprBindings v =
-    snd $ changeBindings [
+    case snd $ changeBindings [
         ("+", BindLeft),
         ("-", BindLeft),
         ("*", BindLeft),
@@ -84,4 +84,4 @@ changeExprBindings v =
         ("^", BindLeft),
         (">>", BindLeft),
         ("<<", BindLeft)
-    ] v
+    ] $ SExpr v of SExpr s -> s
