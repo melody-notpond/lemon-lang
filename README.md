@@ -5,7 +5,7 @@ Lemon is a simple Lisp whose sole purpose is to be a self hosted language.
 List of primatives includes:
 - Numbers (ints and floats)
 - Characters (`'a'`)
-- Numeric operations (`+`, `-`, `*`, `/`, `mod`, `div`, `&`, `|`, `^`, `<<`, `>>`)
+- Numeric operations (`+`, `-`, `*`, `/`, `mod`, `&`, `|`, `^`, `<<`, `>>`)
 - `bind`, `bindl`, `bindr`, `func`
 - `cond`, `eval`
 - `=`, `<`, `>`, `int?`, `float?`, `func?`, `char?`
