@@ -9,9 +9,9 @@ module Lemon.VM
 import Data.Word
 import Data.Bits
 
-data Chunk = Chunk [VMValue] [Word8]
+data Chunk = Chunk [VMValue] [Word8] deriving (Show)
 
-data VM = VM Int Chunk [VMValue]
+data VM = VM Int Chunk [VMValue] deriving (Show)
 
 data VMValue = VMInt Integer
                 | VMDecimal Float
@@ -80,6 +80,16 @@ builtins = [
  - - 0x02 a b   - pushes a constant onto the stack (little endian 2 byte argument)
  - - 0x03 a     - pushes a builtin onto the stack
  - - 0x04       - pops a function and an argument from the stack and pushes its return value
+ - 
+ - List of future implemented opcodes:
+ - - bind
+ - - eval
+ - - cond
+ - - load variable
+ - - load parameter
+ - - load function
+ - - returning from functions
+ - - more stuff idk
  - -}
 -- Executes a VM
 execVM :: VM -> VM
