@@ -13,7 +13,7 @@ List of primatives includes:
 - `import`, `export`
 
 ## Strings
-`"abc"` is syntax sugar for `(list 'a' 'b' 'c')`
+`"abc"` is syntax sugar for `(list 'a' 'b' 'c' 0)`
 
 ## Bind and Func
 The `bind` functions and the `func` functions do not require parentheses for their last argument. The following is valid:
