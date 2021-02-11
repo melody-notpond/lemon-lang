@@ -71,8 +71,8 @@ changeBindings dict v = (dict, v)
 
 -- Check with default arguments
 changeExprBindings :: [LemonValue] -> [LemonValue]
-changeExprBindings v =
-    case snd $ changeBindings [
+changeExprBindings =
+    mapBinding [
         ("+", BindLeft),
         ("-", BindLeft),
         ("*", BindLeft),
@@ -84,4 +84,4 @@ changeExprBindings v =
         ("^", BindLeft),
         (">>", BindLeft),
         ("<<", BindLeft)
-    ] $ SExpr v of SExpr s -> s
+    ]
