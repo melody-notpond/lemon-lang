@@ -3,6 +3,7 @@ module Main where
 import System.Environment
 import System.IO
 
+import Lemon.CodeGen
 import Lemon.Data
 import Lemon.PreExec
 import Lemon.Parser
@@ -40,6 +41,6 @@ main =
         -- Read and parse file
         contents <- readFile filename
         case readExpr contents of
-            Ok v -> print $ changeExprBindings v
+            Ok v -> print $ execVM $ newVM $ generate $ changeExprBindings v
             Err e -> putStrLn e
 
