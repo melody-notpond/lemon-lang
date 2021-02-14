@@ -95,7 +95,9 @@ builtins = [
 execVM :: VM -> VM
 execVM vm@(VM pc chunk stack) =
     let (Chunk constants bytecode) = chunk in
-        case bytecode !! pc of
+        if pc >= length bytecode then
+            vm
+        else case bytecode !! pc of
             -- Halt
             0x00 -> vm
 

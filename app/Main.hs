@@ -25,13 +25,13 @@ main =
 
                 -- apply
                 0x04,
-                0x04,
+                0x04--,
 
                 -- terminate
-                0x00
+                -- 0x00
                 ]
         print $ execVM $ newVM chunk
-        -}
+        --}
 
         -- Get file name from arg list
         args <- getArgs
