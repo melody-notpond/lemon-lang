@@ -18,6 +18,12 @@ main =
                 -- load 4.3
                 0x02, 0x01, 0x00,
 
+                -- bind variable
+                0x05,
+
+                -- push variable
+                0x06, 0x00, 0x00,
+
                 -- load 4
                 0x02, 0x00, 0x00,
 
@@ -28,11 +34,12 @@ main =
                 0x04,
                 0x04--,
 
-                -- terminate
-                -- 0x00
+                -- pop scope
+                --0x07, 0x01
                 ]
         print $ execVM $ newVM chunk
         --}
+        --{-
 
         -- Get file name from arg list
         args <- getArgs
@@ -43,4 +50,5 @@ main =
         case readExpr contents of
             Ok v -> print $ execVM $ newVM $ generate $ changeExprBindings v
             Err e -> putStrLn e
+        --}
 
