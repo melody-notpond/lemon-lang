@@ -10,6 +10,7 @@ module Lemon.VM
 import Data.Word
 import Data.Bits
 import Data.Tuple
+import Data.Char
 
 data Chunk = Chunk [VMValue] [Word8] deriving (Show)
 
@@ -63,6 +64,24 @@ intOp op = NativeFunc (\x -> NativeFunc (\y ->
         _ -> VMError $ "Cannot use operator on " ++ show x ++ " and " ++ show y
     ))
 
+-- Represents a comparison operator on numbers
+compOp :: (Integer -> Integer -> Bool) -> (Float -> Float -> Bool) -> VMValue
+compOp iop fop = NativeFunc (\x -> NativeFunc (\y ->
+    case x of
+        VMInt a ->
+            case y of
+                VMInt b -> VMInt $ if iop a b then 1 else 0
+                VMDecimal b -> VMInt $ if fop (fromIntegral a :: Float) b then 1 else 0
+                _ -> VMError $ "Cannot use operator on " ++ show a ++ " and " ++ show y
+        VMDecimal a ->
+            case y of
+                VMInt b -> VMInt $ if fop a (fromIntegral b :: Float) then 1 else 0
+                VMDecimal b -> VMInt $ if fop a b then 1 else 0
+                _ -> VMError $ "Cannot use operator on " ++ show a ++ " and " ++ show y
+        _ -> VMError $ "Cannot use operator on " ++ show x ++ " and " ++ show y
+    ))
+
+
 -- Creates a new VM from a chunk
 newVM :: Chunk -> VM
 newVM chunk = VM 0 chunk [] []
@@ -70,6 +89,7 @@ newVM chunk = VM 0 chunk [] []
 -- Builtin functions
 builtins :: [(String, VMValue)]
 builtins = [
+    -- Binary operators on numbers
     ("*", binOp (*) (*)),
     ("/", binOp div (/)),
     ("mod", intOp mod),
@@ -77,7 +97,26 @@ builtins = [
     ("-", binOp (-) (-)),
     ("|", intOp (.|.)),
     ("&", intOp (.&.)),
-    ("^", intOp xor)
+    ("^", intOp xor),
+
+    -- Comparison operators
+    ("==", compOp (==) (==)),
+    ("!=", compOp (/=) (/=)),
+    ("<=", compOp (<=) (<=)),
+    (">=", compOp (>=) (>=)),
+    ("<", compOp (<) (<)),
+    (">", compOp (>) (>)),
+
+    -- Type checking operators
+    ("int?",   NativeFunc (\case { VMInt _ -> VMInt 1; _ -> VMInt 0 })),
+    ("float?", NativeFunc (\case { VMDecimal _ -> VMInt 1; _ -> VMInt 0 })),
+    ("char?",  NativeFunc (\case { VMCharacter _ -> VMInt 1; _ -> VMInt 0 })),
+    ("func?",  NativeFunc (\case { VMFunc _ _ -> VMInt 1; NativeFunc _ -> VMInt 1; _ -> VMInt 0 })),
+
+    -- Conversion functions
+    ("int", NativeFunc (\case { VMInt i -> VMInt i; VMDecimal f -> VMInt $ floor f; VMCharacter c -> VMInt $ fromIntegral $ ord c })),
+    ("float", NativeFunc (\case { VMInt i -> VMDecimal $ fromIntegral i; VMDecimal f -> VMDecimal f; VMCharacter c -> VMDecimal $ fromIntegral $ ord c })),
+    ("char", NativeFunc (\case { VMInt i -> VMCharacter $ chr $ fromIntegral i; VMCharacter c -> VMCharacter c; VMDecimal f -> VMCharacter $ chr $ fromIntegral $ floor f }))
     ]
 
 {-

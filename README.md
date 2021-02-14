@@ -8,7 +8,7 @@ List of primatives includes:
 - Numeric operations (`+`, `-`, `*`, `/`, `mod`, `&`, `|`, `^`, `<<`, `>>`)
 - `bind`, `bindl`, `bindr`, `func`
 - `cond`, `eval`
-- `=`, `<`, `>`, `int?`, `float?`, `func?`, `char?`
+- `==`, `<`, `>`, `<=`, `>=`, `!=`, `int?`, `float?`, `func?`, `char?`
 - `int`, `float`, `char` conversion functions
 
 ## Strings
