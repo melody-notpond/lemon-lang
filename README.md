@@ -10,7 +10,6 @@ List of primatives includes:
 - `cond`, `eval`
 - `=`, `<`, `>`, `int?`, `float?`, `func?`, `char?`
 - `int`, `float`, `char` conversion functions
-- `import`, `export`
 
 ## Strings
 `"abc"` is syntax sugar for `(list 'a' 'b' 'c' 0)`
