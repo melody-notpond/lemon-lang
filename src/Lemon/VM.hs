@@ -24,7 +24,7 @@ data VMValue = VMInt Integer
                 | VMDecimal Float
                 | VMCharacter Char
                 | NativeFunc (VMValue -> VMValue)
-                | LemonFunc Word [VMValue]
+                | VMFunc Int [VMValue]
                 | VMError String
 
 instance Show VMValue where
@@ -32,7 +32,7 @@ instance Show VMValue where
     show (VMDecimal f) = show f
     show (VMCharacter c) = show c
     show (NativeFunc _) = "<native>"
-    show (LemonFunc _ _) = "<func>"
+    show (VMFunc _ _) = "<func>"
     show (VMError e) = "error: " ++ e
 
 -- Represents a binary operator on ints and floats
@@ -82,25 +82,26 @@ builtins = [
 
 {-
  - List of opcodes implemented:
- - - 0x00       - halt
- - - 0x01       - no op
- - - 0x02 a b   - pushes a constant onto the stack (little endian 2 byte argument)
- - - 0x03 a     - pushes a builtin onto the stack
- - - 0x04       - pops a function and an argument from the stack and pushes its return value
- - - 0x05       - pops a value from the stack and binds it to the next variable
- - - 0x06 a b   - pushes the given variable from the top of the variable stack onto the value stack (little endian 2 byte argument)
- - - 0x07 a     - pops `a` variables from the stack of variables
+ - - 0x00           - halt
+ - - 0x01           - no op
+ - - 0x02 a b       - pushes a constant onto the stack (little endian 2 byte argument)
+ - - 0x03 a         - pushes a builtin onto the stack
+ - - 0x04           - pops a function and an argument from the stack and pushes its return value
+ - - 0x05           - pops a value from the stack and binds it to the next variable
+ - - 0x06 a b       - pushes the given variable from the top of the variable stack onto the value stack (little endian 2 byte argument)
+ - - 0x07 a         - pops `a` variables from the stack of variables
+ - - 0x08 a b       - pops a value from the stack and replaces a variable with that value
+ - - 0x09 a b c d   - pushes a function with no closed values and the given call address (little endian 4 byte argument)
+ - - 0x0A a b       - closes over the given variable
+ - - 0x0B           - returns from a function (pops a value and return address and repushes the return value)
+ -
+ - List of opcodes to implement:
+ - - 0x0C a b       - jumps relative to the current position (signed little endian 2 byte argument)
+ - - 0x0D a b       - pops a value from the stack and jumps relative to the current position if the popped value is truthy (signed little endian 2 byte argument)
+ - - 0x0E a b       - pops a value from the stack and jumps relative to the current position if the popped value is falsy (signed little endian 2 byte argument)
  -
  - List of future implemented opcodes:
- - - bind
  - - eval
- - - load variable
- - - load parameter
- - - jump (for tco/cond)
- - - set parameter (for tco)
- - - jump conditionally (for cond)
- - - load function
- - - returning from functions
  - - more stuff idk
  - -}
 -- Executes a VM
@@ -133,7 +134,7 @@ execVM vm@(VM pc chunk vars stack) =
                 let stack' = drop 2 stack in
                     case f of
                         NativeFunc g -> execVM $ VM (pc + 1) chunk vars $ g a : stack'
-                        LemonFunc v c -> VM pc chunk vars $ VMError "applying lemon functions is not implemented yet" : stack'
+                        VMFunc addr closed -> execVM $ VM addr chunk (closed ++ vars) $ VMInt (fromIntegral pc + 1) : stack'
                         _ -> VM pc chunk vars $ VMError ("cannot apply " ++ show f) : stack'
 
             -- Bind variable
@@ -151,4 +152,32 @@ execVM vm@(VM pc chunk vars stack) =
             0x07 ->
                 let v = fromIntegral (bytecode !! (pc + 1)) in
                     execVM $ VM (pc + 2) chunk (drop v vars) stack
+
+            -- Reassign variable
+            0x08 ->
+                let n = fromIntegral (bytecode !! (pc + 1)) .|. fromIntegral (bytecode !! (pc + 2)) `shiftL` 8 in
+                let v = head stack in
+                let stack' = tail stack in
+                    execVM $ VM (pc + 3) chunk (take (n - 1) vars ++ [v] ++ drop n vars) stack'
+
+            -- New function
+            0x09 ->
+                let addr = fromIntegral (bytecode !! (pc + 1)) .|. fromIntegral (bytecode !! (pc + 2)) `shiftL` 8 .|. fromIntegral (bytecode !! (pc + 3)) `shiftL` 16 .|. fromIntegral (bytecode !! (pc + 4)) `shiftL` 24 in
+                    execVM $ VM (pc + 5) chunk vars $ VMFunc addr [] : stack
+
+            -- Close variables
+            0x0A ->
+                let v = fromIntegral (bytecode !! (pc + 1)) .|. fromIntegral (bytecode !! (pc + 2)) `shiftL` 8 in
+                let f = head stack in
+                let stack' = tail stack in
+                    case f of
+                        VMFunc addr closed -> execVM $ VM (pc + 3) chunk vars $ VMFunc addr ((vars !! v) : closed) : stack'
+                        _ -> VM pc chunk vars $ VMError ("cannot close over a variable for " ++ show f) : stack'
+
+            -- Returning
+            0x0B ->
+                let v = head stack in
+                let addr = case stack !! 1 of VMInt i -> i in
+                let stack' = drop 2 stack in
+                    execVM $ VM (fromIntegral addr) chunk vars $ v : stack'
 
