@@ -4,10 +4,12 @@ module Lemon.VM
     , VMValue (..)
     , newVM
     , execVM
+    , builtins
     ) where
 
 import Data.Word
 import Data.Bits
+import Data.Tuple
 
 data Chunk = Chunk [VMValue] [Word8] deriving (Show)
 
@@ -61,16 +63,16 @@ newVM :: Chunk -> VM
 newVM chunk = VM 0 chunk []
 
 -- Builtin functions
-builtins :: [VMValue]
+builtins :: [(String, VMValue)]
 builtins = [
-    binOp (*) (*),
-    binOp div (/),
-    intOp mod,
-    binOp (+) (+),
-    binOp (-) (-),
-    intOp (.|.),
-    intOp (.&.),
-    intOp xor
+    ("*", binOp (*) (*)),
+    ("/", binOp div (/)),
+    ("mod", intOp mod),
+    ("+", binOp (+) (+)),
+    ("-", binOp (-) (-)),
+    ("|", intOp (.|.)),
+    ("&", intOp (.&.)),
+    ("^", intOp xor)
     ]
 
 {-
@@ -112,7 +114,7 @@ execVM vm@(VM pc chunk stack) =
             -- Push builtin
             0x03 ->
                 let c = fromIntegral (bytecode !! (pc + 1)) in
-                    execVM $ VM (pc + 2) chunk $ (builtins !! c) : stack
+                    execVM $ VM (pc + 2) chunk $ snd (builtins !! c) : stack
 
             -- Apply function
             0x04 ->
